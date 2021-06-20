@@ -7,31 +7,40 @@ cutCordHole = true;
 printLid = true;
 tapHoles = true;
 
-mxSize = 19.05;
-mxPlateThickness = 1.5;
 columns = 4;
 rows = 2;
+
+
+//MX standard spacing is 19.05mm; use 22.05 with Adafruit NeoKey PCB Breakouts
+mxSize = 22.05;
+mxPlateThickness = 1.5;
+mxHoleSize = 14;
+mxHoleBezel = (mxSize - mxHoleSize) / 2;
+
 keySpaceWide = columns * mxSize;
 keySpaceTall = rows * mxSize;
-keySpaceDeep = 35;
+keySpaceDeep = 45;
 bezel = 15;
 internalBezel = 5;
 roundingLevel = 7.5;
 bottomLipBezel = 8;
 
-cordHoleRadius = 2;
+cordHoleRadius = 2.5;
 
 lidThickness = 5;
 innerLidThickness = 3;
 
-tapHoleOuterWidth = 5.2;
-tapHoleInnerWidth = 2.6;
+tapHoleOuterWidth = 5.4;
+tapHoleInnerWidth = 2.8;
 tapHoleDepth = 6;
 
 caseLidOffset = printLid ? 20 : 0;
 
 bottomHoleWide = keySpaceWide + (2* (bezel - bottomLipBezel));
 bottomHoleTall = keySpaceTall+ (2 * (bezel - bottomLipBezel));
+
+pcbMargin = 10;
+pcbBracketWidth = 36;
 
 if(printCase) {
     translate([0,0,caseLidOffset]){
@@ -58,11 +67,11 @@ if(printCase) {
         if(printPlate) {
             translate([0.75*bezel, 0.75*bezel, keySpaceDeep - (internalBezel - 0.2)]){
                 difference(){
-                    cube([keySpaceWide + (0.5 * bezel), keySpaceTall + (0.5 * bezel), 1.5]);
-                    translate([0.25 * bezel, 0.25 * bezel, -1]) {
+                    cube([keySpaceWide + (0.5 * bezel), keySpaceTall + (0.5 * bezel), mxPlateThickness]);
+                    translate([0.25 * bezel, 0.25 * bezel, -1 * mxPlateThickness]) {
                         for(y = [0 : rows]) {
                             for(x = [0 : columns]) {
-                                translate([(x * mxSize) + 2.55, (y * mxSize) + 2.55, 0])cube([14, 14, 3]);
+                                translate([(x * mxSize) + mxHoleBezel, (y * mxSize) + mxHoleBezel, 0])cube([mxHoleSize, mxHoleSize, 3 * mxPlateThickness]);
                             }
                         }
                     }
@@ -93,11 +102,20 @@ if (printLid) {
                 translate([(keySpaceWide + 2 * bezel -((bottomLipBezel+(0.5 * tapHoleOuterWidth))/2)), (keySpaceTall + 2 * bezel - ((bottomLipBezel +(0.5 * tapHoleOuterWidth))/2)), 0.5 * (lidThickness - 1)]){
                     cylinder(h = lidThickness, d = tapHoleOuterWidth, center = true, $fn = 12);                cylinder(h = 2 * lidThickness, d = tapHoleInnerWidth, center = true, $fn = 80);
                 }
+                
             }
         }
-        translate([1.1 * bottomLipBezel, 1.1 * bottomLipBezel, (0.9* lidThickness)])cube([bottomHoleWide - (0.2 * bottomLipBezel), bottomHoleTall - (0.2 * bottomLipBezel), innerLidThickness +(0.1* lidThickness)]);
+        translate([1.1 * bottomLipBezel, 1.1 * bottomLipBezel, (0.9* lidThickness)]){
+            difference(){
+                cube([bottomHoleWide - (0.2 * bottomLipBezel), bottomHoleTall - (0.2 * bottomLipBezel), innerLidThickness +(0.1* lidThickness)]);
+                translate([pcbMargin, bottomHoleTall / 2,0])cylinder(h = lidThickness*2, d = tapHoleOuterWidth, center = true, $fn = 12);
+                translate([pcbMargin + pcbBracketWidth, bottomHoleTall / 2,0])cylinder(h = lidThickness*2, d = tapHoleOuterWidth, center = true, $fn = 12);
+            }
+        }
     }
 }
+
+
 
 
 echo("Maximum PCB size: ", keySpaceWide + (2* (bezel - internalBezel)), " by " , keySpaceTall+ (2 * (bezel - internalBezel)));
